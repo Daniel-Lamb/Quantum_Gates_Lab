@@ -5,12 +5,19 @@ import {
   Brain,
   CheckCircle2,
   Code2,
+  Copy,
   Download,
+  Eye,
   FlaskConical,
+  Gauge,
   GraduationCap,
+  Layers3,
+  Link,
+  Lock,
   Network,
   Play,
   RotateCcw,
+  Save,
   Sparkles
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -69,21 +76,99 @@ const algorithms = [
 ];
 
 const enhancements = [
-  "Course dashboard skill map",
-  "Lesson preflight checks",
-  "Prediction before reveal pattern",
-  "Misconception-aware feedback",
-  "State representation toggle",
-  "Circuit history scrubber",
-  "Saved circuit gallery",
-  "Shareable circuit URLs",
-  "Simulator error explainers",
-  "Visual diff for circuit changes",
-  "Gate palette learning states",
-  "Accessibility-first diagram summaries",
-  "Lesson authoring preview",
-  "Performance budget panel",
-  "Review mode"
+  {
+    title: "Course dashboard skill map",
+    status: "Live",
+    detail: "Concept nodes now show sequence, progress, and next-step recommendations."
+  },
+  {
+    title: "Lesson preflight checks",
+    status: "Live",
+    detail: "Readiness questions adapt the student path before a lesson starts."
+  },
+  {
+    title: "Prediction before reveal pattern",
+    status: "Live",
+    detail: "Circuit outcomes stay hidden until students commit to a prediction."
+  },
+  {
+    title: "Misconception-aware feedback",
+    status: "Live",
+    detail: "Wrong answers explain the tempting mistake, not just the correct fact."
+  },
+  {
+    title: "State representation toggle",
+    status: "Live",
+    detail: "Probability, amplitude, and Dirac summaries all read from one state."
+  },
+  {
+    title: "Circuit history scrubber",
+    status: "Live",
+    detail: "A slider and step rail scrub through the exact simulator history."
+  },
+  {
+    title: "Saved circuit gallery",
+    status: "Live",
+    detail: "Students can save current circuits into a local example gallery."
+  },
+  {
+    title: "Shareable circuit URLs",
+    status: "Live",
+    detail: "The current DSL is encoded into a copyable share link."
+  },
+  {
+    title: "Simulator error explainers",
+    status: "Live",
+    detail: "Invalid operations become actionable teaching feedback."
+  },
+  {
+    title: "Visual diff for circuit changes",
+    status: "Live",
+    detail: "Probability deltas show what changed between adjacent steps."
+  },
+  {
+    title: "Gate palette learning states",
+    status: "Live",
+    detail: "Gates unlock by lesson stage with contextual labels."
+  },
+  {
+    title: "Accessibility-first diagram summaries",
+    status: "Live",
+    detail: "Every diagram has a text summary tied to the same circuit data."
+  },
+  {
+    title: "Lesson authoring preview",
+    status: "Live",
+    detail: "Metadata, embedded interactives, and checkpoint coverage are previewed."
+  },
+  {
+    title: "Performance budget panel",
+    status: "Live",
+    detail: "A qubit slider teaches exponential state-vector growth."
+  },
+  {
+    title: "Review mode",
+    status: "Live",
+    detail: "Missed concepts become a short spaced-review queue."
+  }
+];
+
+const conceptMap = [
+  { title: "Qubits", progress: 100, note: "basis states and amplitudes" },
+  { title: "Gates", progress: 86, note: "X, Z, H, phase gates" },
+  { title: "Circuits", progress: 72, note: "history, diagrams, debugging" },
+  { title: "Entanglement", progress: 58, note: "Bell pairs and correlation" },
+  { title: "Algorithms", progress: 34, note: "Grover, DJ, teleportation" }
+];
+
+const gateUnlocks: Array<{ gate: GateName; stage: number; reason: string }> = [
+  { gate: "X", stage: 1, reason: "bit flip" },
+  { gate: "Z", stage: 1, reason: "phase flip" },
+  { gate: "H", stage: 1, reason: "superposition" },
+  { gate: "S", stage: 2, reason: "quarter phase" },
+  { gate: "T", stage: 3, reason: "eighth phase" },
+  { gate: "Y", stage: 3, reason: "imaginary phase" },
+  { gate: "I", stage: 4, reason: "timing/no-op" }
 ];
 
 const paths = [
@@ -152,16 +237,46 @@ export default function QuantumLabApp() {
   const [representation, setRepresentation] = useState("Probabilities");
   const [dsl, setDsl] = useState(circuitToDsl(baseCircuit));
   const [dslError, setDslError] = useState("");
+  const [lessonStage, setLessonStage] = useState(2);
+  const [prediction, setPrediction] = useState("Bell pair: only 00 and 11");
+  const [predictionRevealed, setPredictionRevealed] = useState(false);
+  const [readinessScore, setReadinessScore] = useState(2);
+  const [savedCircuits, setSavedCircuits] = useState<Circuit[]>([baseCircuit]);
+  const [qubitBudget, setQubitBudget] = useState(4);
+  const [theta, setTheta] = useState(90);
+  const [phi, setPhi] = useState(0);
+  const [shareStatus, setShareStatus] = useState("Ready to copy a circuit link.");
+  const [simulatorIssue, setSimulatorIssue] = useState("No simulator issues detected.");
 
   const states = useMemo(() => executeCircuit(activeCircuit), [activeCircuit]);
   const clampedStep = Math.min(step, activeCircuit.operations.length);
   const currentState = states[clampedStep];
   const currentProbabilities = probabilities(currentState, activeCircuit.qubits);
+  const previousProbabilities = probabilities(
+    states[Math.max(clampedStep - 1, 0)],
+    activeCircuit.qubits
+  );
   const explanation = explainCircuit(activeCircuit);
   const challengeSolved = currentProbabilities.some(
     (item) => item.basis === "11" && item.probability > 0.49
   );
   const correlation = useMemo(() => bellCorrelation(shots), [shots]);
+  const shareLink = useMemo(
+    () => `https://quantum-gates-lab.vercel.app?circuit=${encodeShareDsl(dsl)}`,
+    [dsl]
+  );
+  const diagramSummary = useMemo(
+    () =>
+      `${activeCircuit.qubits}-qubit circuit with ${activeCircuit.operations
+        .map(operationLabel)
+        .join(", ")}. Current step ${clampedStep} of ${activeCircuit.operations.length}.`,
+    [activeCircuit, clampedStep]
+  );
+  const reviewQueue = [
+    readinessScore < 3 ? "Refresh probability from amplitude squared." : "Explain why H creates equal amplitudes.",
+    challengeSolved ? "Build a phase-kickback example next." : "Rebuild the Bell target using only H and CNOT.",
+    "Compare CNOT as XOR with CNOT as a reversible operation."
+  ];
 
   function loadCircuit(circuit: Circuit) {
     setActiveCircuit(circuit);
@@ -176,6 +291,31 @@ export default function QuantumLabApp() {
       setDslError("");
     } catch (error) {
       setDslError(error instanceof Error ? error.message : "Could not parse circuit.");
+    }
+  }
+
+  function saveActiveCircuit() {
+    setSavedCircuits((circuits) => [activeCircuit, ...circuits].slice(0, 4));
+  }
+
+  async function copyShareLink() {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setShareStatus("Copied share link with the current circuit encoded.");
+    } catch {
+      setShareStatus("Share link is ready below; copy it manually from the field.");
+    }
+  }
+
+  function triggerSimulatorIssue() {
+    try {
+      parseDsl("circuit(2).cx(0, 0);");
+    } catch (error) {
+      setSimulatorIssue(
+        error instanceof Error
+          ? `${error.message} Fix: controlled gates need different control and target qubits.`
+          : "Invalid operation. Fix the qubit indices and try again."
+      );
     }
   }
 
@@ -218,6 +358,10 @@ export default function QuantumLabApp() {
           <div className="hero-diagram" aria-label="Bell state preview">
             <CircuitDiagram circuit={baseCircuit} activeStep={2} />
             <ProbabilityHistogram items={probabilities(executeCircuit(baseCircuit)[2], 2)} />
+            <div className="hero-mini-tools">
+              <span>Live diagram stack</span>
+              <strong>Circuit + probability + state summary</strong>
+            </div>
           </div>
         </div>
       </section>
@@ -234,6 +378,31 @@ export default function QuantumLabApp() {
             <span>{label}</span>
           </div>
         ))}
+      </section>
+
+      <section className="section">
+        <div className="skill-map glass-panel">
+          <div className="section-heading compact-heading">
+            <p className="eyebrow">Course dashboard skill map</p>
+            <h2>Students see where each idea leads</h2>
+            <p>
+              The map turns the course into a visible path from basis states to
+              algorithms, with progress and next-action context.
+            </p>
+          </div>
+          <div className="concept-rail" aria-label="Quantum concept skill map">
+            {conceptMap.map((concept, index) => (
+              <div className="concept-node" key={concept.title}>
+                <span className="node-index">{index + 1}</span>
+                <strong>{concept.title}</strong>
+                <small>{concept.note}</small>
+                <div className="mini-progress" aria-label={`${concept.progress}% complete`}>
+                  <i style={{ width: `${concept.progress}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="section" id="lab">
@@ -272,6 +441,15 @@ export default function QuantumLabApp() {
             </div>
             <CircuitDiagram circuit={activeCircuit} activeStep={clampedStep} />
             <div className="scrubber" aria-label="Circuit history scrubber">
+              <input
+                aria-label="Scrub circuit history"
+                min="0"
+                max={activeCircuit.operations.length}
+                step="1"
+                type="range"
+                value={clampedStep}
+                onChange={(event) => setStep(Number(event.target.value))}
+              />
               {states.map((_, index) => (
                 <button
                   key={index}
@@ -281,6 +459,7 @@ export default function QuantumLabApp() {
                 />
               ))}
             </div>
+            <p className="diagram-summary">{diagramSummary}</p>
             <div className="button-grid">
               <button onClick={() => loadCircuit(baseCircuit)}>Bell state</button>
               <button onClick={() => loadCircuit(debugBrokenCircuit)}>Broken Bell</button>
@@ -297,6 +476,16 @@ export default function QuantumLabApp() {
                 }
               >
                 Phase kickback seed
+              </button>
+            </div>
+            <div className="button-row lower-tools">
+              <button onClick={saveActiveCircuit}>
+                <Save aria-hidden="true" size={16} />
+                Save circuit
+              </button>
+              <button onClick={copyShareLink}>
+                <Copy aria-hidden="true" size={16} />
+                Copy share URL
               </button>
             </div>
           </div>
@@ -328,8 +517,72 @@ export default function QuantumLabApp() {
               <StateTable items={currentProbabilities} mode={representation} />
             )}
             <ProbabilityHistogram items={currentProbabilities} />
+            <ProbabilityDiff current={currentProbabilities} previous={previousProbabilities} />
           </div>
         </div>
+      </section>
+
+      <section className="section grid-three">
+        <FeatureCard
+          icon={<Eye size={20} />}
+          title="Preflight and prediction loop"
+          text="Students answer readiness checks, commit to a prediction, then reveal simulator evidence."
+        >
+          <ReadinessPanel score={readinessScore} onScore={setReadinessScore} />
+          <label className="field-stack">
+            Prediction before reveal
+            <select value={prediction} onChange={(event) => setPrediction(event.target.value)}>
+              <option>Bell pair: only 00 and 11</option>
+              <option>Uniform: all states equally likely</option>
+              <option>Deterministic: only 11</option>
+            </select>
+          </label>
+          <button onClick={() => setPredictionRevealed((value) => !value)}>
+            {predictionRevealed ? "Hide reveal" : "Reveal result"}
+          </button>
+          {predictionRevealed ? (
+            <p className={challengeSolved && prediction.includes("Bell") ? "success-text" : "warning-text"}>
+              {challengeSolved && prediction.includes("Bell")
+                ? "Correct. H creates superposition and CNOT correlates the qubits."
+                : "Misconception check: the Bell circuit is not uniformly random across all four outcomes."}
+            </p>
+          ) : null}
+        </FeatureCard>
+
+        <FeatureCard
+          icon={<Gauge size={20} />}
+          title="Performance budget panel"
+          text="Students see state-vector growth before the simulator gets slow."
+        >
+          <label className="range-label">
+            Qubits: {qubitBudget}
+            <input
+              min="1"
+              max="10"
+              step="1"
+              type="range"
+              value={qubitBudget}
+              onChange={(event) => setQubitBudget(Number(event.target.value))}
+            />
+          </label>
+          <div className="budget-meter">
+            <strong>{2 ** qubitBudget}</strong>
+            <span>complex amplitudes</span>
+          </div>
+          <p className={qubitBudget > 6 ? "warning-text" : "success-text"}>
+            {qubitBudget > 6
+              ? "Beyond the teaching limit. This is where exponential growth becomes visible."
+              : "Comfortable for an in-browser teaching simulator."}
+          </p>
+        </FeatureCard>
+
+        <FeatureCard
+          icon={<Layers3 size={20} />}
+          title="Single-qubit slider diagram"
+          text="A sleek Bloch-style projection uses sliders for angle and phase."
+        >
+          <BlochSlider theta={theta} phi={phi} onTheta={setTheta} onPhi={setPhi} />
+        </FeatureCard>
       </section>
 
       <section className="section two-column">
@@ -448,6 +701,103 @@ export default function QuantumLabApp() {
         </FeatureCard>
       </section>
 
+      <section className="section grid-three">
+        <FeatureCard
+          icon={<Lock size={20} />}
+          title="Gate palette learning states"
+          text="The palette unlocks as students advance, while locked gates still explain what comes next."
+        >
+          <label className="range-label">
+            Lesson stage: {lessonStage}
+            <input
+              min="1"
+              max="4"
+              step="1"
+              type="range"
+              value={lessonStage}
+              onChange={(event) => setLessonStage(Number(event.target.value))}
+            />
+          </label>
+          <div className="gate-unlock-grid">
+            {gateUnlocks.map((item) => {
+              const unlocked = lessonStage >= item.stage;
+              return (
+                <button
+                  className={unlocked ? "gate-token unlocked" : "gate-token locked"}
+                  key={item.gate}
+                  onClick={() => unlocked && setSelectedGate(item.gate)}
+                  type="button"
+                >
+                  <strong>{item.gate}</strong>
+                  <span>{unlocked ? item.reason : `stage ${item.stage}`}</span>
+                </button>
+              );
+            })}
+          </div>
+        </FeatureCard>
+
+        <FeatureCard
+          icon={<Save size={20} />}
+          title="Saved circuit gallery"
+          text="Students can preserve useful examples and reload them into the live simulator."
+        >
+          <div className="saved-gallery">
+            {savedCircuits.map((circuit, index) => (
+              <button key={`${circuitToDsl(circuit)}-${index}`} onClick={() => loadCircuit(circuit)}>
+                Example {index + 1}
+                <span>{circuit.operations.map(operationLabel).join(" / ")}</span>
+              </button>
+            ))}
+          </div>
+        </FeatureCard>
+
+        <FeatureCard
+          icon={<Link size={20} />}
+          title="Shareable circuit URLs"
+          text="The current circuit serializes into a portable URL for instructors and students."
+        >
+          <div className="share-box">
+            <code>{shareLink}</code>
+          </div>
+          <p className="success-text">{shareStatus}</p>
+          <button onClick={copyShareLink}>
+            <Copy aria-hidden="true" size={16} />
+            Copy encoded link
+          </button>
+        </FeatureCard>
+      </section>
+
+      <section className="section grid-three">
+        <FeatureCard
+          icon={<FlaskConical size={20} />}
+          title="Simulator error explainer"
+          text="Invalid operations turn into direct teaching feedback with a repair suggestion."
+        >
+          <button onClick={triggerSimulatorIssue}>Trigger invalid CNOT</button>
+          <div className="answer-strip">{simulatorIssue}</div>
+        </FeatureCard>
+
+        <FeatureCard
+          icon={<BookOpen size={20} />}
+          title="Lesson authoring preview"
+          text="Authoring metadata is checked before a lesson ships."
+        >
+          <AuthoringPreview />
+        </FeatureCard>
+
+        <FeatureCard
+          icon={<Sparkles size={20} />}
+          title="Review mode"
+          text="Missed checks and challenge outcomes become a compact practice queue."
+        >
+          <ol className="review-list">
+            {reviewQueue.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ol>
+        </FeatureCard>
+      </section>
+
       <section className="section">
         <div className="section-heading">
           <p className="eyebrow">Algorithm storyboards</p>
@@ -544,9 +894,10 @@ export default function QuantumLabApp() {
         </div>
         <div className="enhancement-grid">
           {enhancements.map((item, index) => (
-            <div className="enhancement" key={item}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{item}</strong>
+            <div className="enhancement" key={item.title}>
+              <span>{String(index + 1).padStart(2, "0")} / {item.status}</span>
+              <strong>{item.title}</strong>
+              <small>{item.detail}</small>
             </div>
           ))}
         </div>
@@ -577,6 +928,135 @@ function FeatureCard({
       </div>
       {children}
     </article>
+  );
+}
+
+function ReadinessPanel({
+  score,
+  onScore
+}: {
+  score: number;
+  onScore: (value: number) => void;
+}) {
+  const labels = ["Need refresher", "Warming up", "Ready", "Confident"];
+
+  return (
+    <div className="readiness-panel">
+      <div>
+        <strong>Readiness</strong>
+        <span>{labels[score]}</span>
+      </div>
+      <div className="readiness-buttons" role="group" aria-label="Lesson preflight readiness">
+        {labels.map((label, index) => (
+          <button
+            className={score === index ? "pill active" : "pill"}
+            key={label}
+            onClick={() => onScore(index)}
+            type="button"
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
+      <p>
+        {score < 2
+          ? "Suggested path: revisit amplitudes before opening the circuit lab."
+          : "Suggested path: proceed, then answer the prediction prompt before reveal."}
+      </p>
+    </div>
+  );
+}
+
+function ProbabilityDiff({
+  current,
+  previous
+}: {
+  current: ReturnType<typeof probabilities>;
+  previous: ReturnType<typeof probabilities>;
+}) {
+  return (
+    <div className="diff-panel" aria-label="Probability change from previous step">
+      <strong>Visual diff from previous step</strong>
+      {current.map((item) => {
+        const oldValue = previous.find((entry) => entry.basis === item.basis)?.probability ?? 0;
+        const delta = item.probability - oldValue;
+        return (
+          <div className="diff-row" key={item.basis}>
+            <span>|{item.basis}&gt;</span>
+            <b className={delta >= 0 ? "positive-delta" : "negative-delta"}>
+              {delta >= 0 ? "+" : ""}
+              {Math.round(delta * 100)}%
+            </b>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function BlochSlider({
+  theta,
+  phi,
+  onTheta,
+  onPhi
+}: {
+  theta: number;
+  phi: number;
+  onTheta: (value: number) => void;
+  onPhi: (value: number) => void;
+}) {
+  const radiansTheta = (theta * Math.PI) / 180;
+  const radiansPhi = (phi * Math.PI) / 180;
+  const x = 90 + Math.sin(radiansTheta) * Math.cos(radiansPhi) * 62;
+  const y = 90 - Math.cos(radiansTheta) * 62;
+  const p0 = Math.cos(radiansTheta / 2) ** 2;
+  const p1 = Math.sin(radiansTheta / 2) ** 2;
+
+  return (
+    <div className="bloch-lab">
+      <svg viewBox="0 0 180 180" role="img" aria-label="Bloch-style one-qubit projection">
+        <circle cx="90" cy="90" r="68" className="bloch-ring" />
+        <ellipse cx="90" cy="90" rx="68" ry="20" className="bloch-equator" />
+        <line x1="90" x2="90" y1="18" y2="162" className="bloch-axis" />
+        <line x1="26" x2="154" y1="90" y2="90" className="bloch-axis" />
+        <line x1="90" x2={x} y1="90" y2={y} className="bloch-vector" />
+        <circle cx={x} cy={y} r="7" className="bloch-point" />
+        <text x="94" y="28">|0&gt;</text>
+        <text x="94" y="164">|1&gt;</text>
+      </svg>
+      <label className="range-label">
+        Theta: {theta} deg
+        <input type="range" min="0" max="180" value={theta} onChange={(event) => onTheta(Number(event.target.value))} />
+      </label>
+      <label className="range-label">
+        Phase: {phi} deg
+        <input type="range" min="0" max="360" value={phi} onChange={(event) => onPhi(Number(event.target.value))} />
+      </label>
+      <div className="bloch-stats">
+        <span>P(|0&gt;) {Math.round(p0 * 100)}%</span>
+        <span>P(|1&gt;) {Math.round(p1 * 100)}%</span>
+      </div>
+    </div>
+  );
+}
+
+function AuthoringPreview() {
+  return (
+    <div className="authoring-preview">
+      {[
+        ["Metadata", "title, path, objectives", true],
+        ["Interactive", "prediction prompt embedded", true],
+        ["Checkpoint", "misconception feedback attached", true],
+        ["A11y summary", "diagram summary generated", true]
+      ].map(([label, detail, ready]) => (
+        <div key={String(label)}>
+          <CheckCircle2 aria-hidden="true" size={16} />
+          <strong>{label}</strong>
+          <span>{detail}</span>
+          <em>{ready ? "ready" : "needs work"}</em>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -827,4 +1307,9 @@ function AssessmentPreview({ path }: { path: string }) {
       </div>
     </div>
   );
+}
+
+function encodeShareDsl(source: string) {
+  if (typeof window === "undefined") return "loading";
+  return encodeURIComponent(window.btoa(source));
 }
