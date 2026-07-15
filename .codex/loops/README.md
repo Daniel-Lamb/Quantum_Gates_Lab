@@ -438,3 +438,129 @@ Prepare the app for production deployment.
 ### Completion Criteria
 
 - The app is deployable and the deployment process is documented.
+
+## Loop 15: Gate Challenges And Matrix Lessons
+
+### Goal
+
+Add focused practice for target-state construction and step-by-step gate matrix multiplication.
+
+### Files To Create Or Modify
+
+- `content/challenges/*`
+- `src/components/challenges/*`
+- `src/components/visualizations/MatrixMultiplicationStepper.tsx`
+- `src/lib/learning/challenge-scoring.ts`
+- `app/lab/challenges/page.tsx`
+- `app/reference/matrix-lab/page.tsx`
+
+### Expected Output
+
+- Students can solve at least five target-state challenges.
+- Students can step through X, Z, and H matrix multiplication.
+
+### Verification Steps
+
+- Unit-test challenge scoring.
+- Component-test matrix stepper output.
+- Browser-test completing one challenge.
+
+### Completion Criteria
+
+- Challenge mode reuses the simulator and gives useful feedback.
+
+## Loop 16: Debugging, Classical Logic, And Entanglement Labs
+
+### Goal
+
+Add deeper reasoning labs that teach diagnosis, reversible logic, and entanglement correlations.
+
+### Files To Create Or Modify
+
+- `content/debugging/*`
+- `src/components/debugging/*`
+- `src/components/logic/*`
+- `src/components/entanglement/*`
+- `app/lab/debugging/page.tsx`
+- `app/lab/classical-vs-quantum/page.tsx`
+- `app/lab/entanglement/page.tsx`
+
+### Expected Output
+
+- Broken-circuit exercises with validation.
+- Side-by-side classical and quantum logic explorer.
+- Entanglement correlation simulator with joint outcome matrix.
+
+### Verification Steps
+
+- Unit-test truth-table utilities.
+- Unit-test joint measurement count calculations.
+- Browser-test one debugging fix and one Bell correlation run.
+
+### Completion Criteria
+
+- Each lab has at least one complete guided activity.
+
+## Loop 17: DSL, Gate Reference, And Circuit Explanation
+
+### Goal
+
+Connect programming, reference material, and circuit reasoning.
+
+### Files To Create Or Modify
+
+- `src/lib/quantum/dsl.ts`
+- `src/lib/quantum/explain-circuit.ts`
+- `content/reference/gates/*`
+- `src/components/reference/*`
+- `src/components/explanations/*`
+- `app/lab/code/page.tsx`
+- `app/reference/gates/[gateSlug]/page.tsx`
+
+### Expected Output
+
+- DSL programs parse into circuits.
+- Circuit builder can export DSL.
+- Gate reference pages render from shared gate data.
+- Explain This Circuit panel summarizes simulator history.
+
+### Verification Steps
+
+- Unit-test DSL parsing and invalid syntax.
+- Unit-test explanation generation for known circuits.
+- Browser-test gate reference navigation.
+
+### Completion Criteria
+
+- Students can move between code, diagram, simulator, and explanation.
+
+## Loop 18: Learning Paths, Assessment Bank, And Instructor Mode
+
+### Goal
+
+Add course personalization and classroom support.
+
+### Files To Create Or Modify
+
+- `content/assessments/*`
+- `src/lib/learning/*`
+- `src/components/learning/*`
+- `src/components/instructor/*`
+- `app/instructor/page.tsx`
+- Course dashboard routes and stores
+
+### Expected Output
+
+- Progressive lesson paths filter course content.
+- Assessment bank powers checkpoints and review sets.
+- Instructor mode supports demos, reveal controls, and exports.
+
+### Verification Steps
+
+- Unit-test assessment schema validation.
+- Browser-test switching lesson paths.
+- Browser-test instructor reveal and export controls.
+
+### Completion Criteria
+
+- The platform supports self-study, programming-heavy study, theory-heavy study, and classroom use.

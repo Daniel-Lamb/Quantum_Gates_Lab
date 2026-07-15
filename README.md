@@ -55,6 +55,8 @@ The application will include:
 - [docs/curriculum-map.md](docs/curriculum-map.md): full course structure and learning objectives.
 - [docs/visualization-plan.md](docs/visualization-plan.md): diagram and animation plan.
 - [docs/interactive-tools.md](docs/interactive-tools.md): proposed tools and user flows.
+- [docs/feature-expansion-plan.md](docs/feature-expansion-plan.md): incorporation plan for expanded lessons, labs, references, challenges, and instructor tools.
+- [docs/existing-feature-enhancements.md](docs/existing-feature-enhancements.md): 15 enhancements to deepen the already planned feature set.
 - [docs/roadmap.md](docs/roadmap.md): staged build from MVP to advanced release.
 - [docs/testing-strategy.md](docs/testing-strategy.md): verification strategy for math, UI, and pedagogy.
 - [specs/file-structure.md](specs/file-structure.md): target application file layout.

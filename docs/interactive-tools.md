@@ -26,6 +26,35 @@ Let students construct small quantum circuits visually and inspect the result at
 - Export to teaching DSL.
 - Import from JSON.
 
+## Gate Challenge Mode
+
+### Goal
+
+Turn circuit construction into focused practice with clear targets and constraints.
+
+### Required Features
+
+- Target state or target probability display.
+- Allowed gate set.
+- Maximum operation count.
+- Submit and validate button.
+- Hint ladder.
+- Explanation after solve.
+
+## Circuit Debugging Lab
+
+### Goal
+
+Teach students to diagnose gate-order, control-target, and measurement mistakes.
+
+### Required Features
+
+- Broken circuit display.
+- Expected versus actual output.
+- Locked and editable circuit regions.
+- State divergence marker.
+- Fix validation.
+
 ## Gate-By-Gate Simulator
 
 ### Goal
@@ -86,6 +115,20 @@ type ExerciseTest =
 - Reveal hints progressively.
 - Convert passing code to circuit diagram.
 
+## Mini Quantum Programming DSL Lab
+
+### Goal
+
+Make code and circuit diagrams interchangeable for learning.
+
+### Required Features
+
+- Constrained DSL parser.
+- AST to circuit conversion.
+- Circuit to DSL export.
+- Compiler-style teaching errors.
+- Exercise tests over states, probabilities, and circuit shape.
+
 ## Quiz And Checkpoint System
 
 ### Goal
@@ -138,3 +181,31 @@ Help students compare classical boolean operations with reversible and quantum o
 - Toffoli examples.
 - Matrix/unitary requirement explanation.
 - Side-by-side circuit diagrams.
+
+## Entanglement Correlation Simulator
+
+### Goal
+
+Show the difference between individual randomness and joint correlation.
+
+### Required Features
+
+- Bell state presets.
+- Measurement basis selector.
+- Joint outcome matrix.
+- Individual histograms.
+- Correlation explanation.
+
+## Instructor Mode
+
+### Goal
+
+Support classroom demonstrations and reusable teaching materials.
+
+### Required Features
+
+- Demo playlist.
+- Presentation layout.
+- Hide/reveal answer controls.
+- Export SVG diagrams and charts.
+- Copy lesson, challenge, and circuit links.

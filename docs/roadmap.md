@@ -110,6 +110,9 @@ Deliverables:
 - First six modules.
 - Quizzes.
 - Coding exercises.
+- Gate challenge mode for foundational target states.
+- Step-by-step matrix multiplication embeds.
+- Misconception-aware feedback.
 - Hints and feedback.
 - Progress persistence.
 
@@ -122,6 +125,7 @@ Deliverables:
 - Deutsch-Jozsa demo.
 - Grover search demo.
 - Teleportation demo.
+- Algorithm storyboards with classical baselines.
 - Algorithm timelines.
 - Classical comparison panels.
 
@@ -137,6 +141,31 @@ Deliverables:
 - Responsive layout pass.
 - Documentation polish.
 - Deployment configuration.
+
+## Phase 11: Expanded Practice Labs
+
+Goal: deepen student practice after the core learning loop works.
+
+Deliverables:
+
+- Circuit debugging exercises.
+- Entanglement correlation simulator.
+- Quantum versus classical logic lab.
+- Mini quantum programming DSL lab.
+- Gate reference explorer.
+- Explain This Circuit panel integrated into labs.
+
+## Phase 12: Course Personalization And Instructor Tools
+
+Goal: make the platform adaptable to different learners and classroom use.
+
+Deliverables:
+
+- Progressive lesson paths.
+- Assessment bank.
+- Instructor mode.
+- Exportable circuit diagrams and probability charts.
+- Demo playlists and reveal controls.
 
 ## MVP Definition
 
@@ -159,3 +188,4 @@ The advanced release is complete when:
 - Bloch sphere is polished and accessible.
 - Saved circuits and shareable URLs exist.
 - Instructor export mode exists for diagrams and lesson links.
+- Expanded practice labs include challenges, debugging, DSL exercises, and classical-versus-quantum comparisons.

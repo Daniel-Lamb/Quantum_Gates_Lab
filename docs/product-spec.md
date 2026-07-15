@@ -63,6 +63,20 @@ Students move through the product in five modes:
 - Shows current state vector, probabilities, and measurement outcomes.
 - Exports circuit as JSON and teaching DSL code.
 
+### Gate Challenge Mode
+
+- Presents a target state, distribution, or concept.
+- Constrains allowed gates and operation count.
+- Scores submitted circuits using the simulator.
+- Provides hints and targeted feedback.
+
+### Circuit Debugging Exercises
+
+- Presents intentionally broken circuits.
+- Shows expected versus actual output.
+- Lets students fix circuits under edit constraints.
+- Explains the first incorrect state transition after solving.
+
 ### Simulator Engine
 
 - Pure TypeScript state-vector simulator.
@@ -96,6 +110,12 @@ circuit(2)
 - Exercise tests compare final probabilities or expected states within tolerance.
 - Hint system reveals one conceptual hint, then one implementation hint.
 
+### Gate Reference Explorer
+
+- One page per supported gate.
+- Includes symbol, matrix, examples, inverse, powers, Bloch effect, common uses, and common mistakes.
+- Links directly into relevant lessons and challenges.
+
 ### Explain This Circuit
 
 Given a circuit, the app should generate a structured explanation:
@@ -107,6 +127,27 @@ Given a circuit, the app should generate a structured explanation:
 - Concept tags such as "superposition", "phase", or "entanglement".
 
 The MVP version can be deterministic template-based. A later version can support optional AI-assisted explanations.
+
+### Progressive Lesson Paths
+
+- "No Linear Algebra Yet" path.
+- "CS Theory" path.
+- "Programming" path.
+- Full course path.
+- Lessons expose optional advanced sections based on path.
+
+### Assessment Bank
+
+- Reusable tagged questions for checkpoints, reviews, and instructor sets.
+- Supports probability prediction, circuit matching, matrix calculation, code completion, and misconception questions.
+
+### Instructor Mode
+
+- Presentation-friendly demos.
+- Hide/reveal answer controls.
+- Exportable diagrams.
+- Shareable lesson and circuit links.
+- Review set builder from the assessment bank.
 
 ## User Flows
 
