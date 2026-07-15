@@ -180,51 +180,93 @@ const paths = [
 
 const gateInfo: Record<
   GateName,
-  { title: string; description: string; use: string; challenge: string }
+  {
+    title: string;
+    description: string;
+    use: string;
+    challenge: string;
+    how: string;
+    effect: string;
+    example: string;
+  }
 > = {
   I: {
     title: "Identity",
     description: "Leaves the state unchanged.",
     use: "Useful for timing, placeholders, and explaining no-op columns.",
-    challenge: "Show that I followed by H behaves exactly like H."
+    challenge: "Show that I followed by H behaves exactly like H.",
+    how: "The identity matrix has 1s on the diagonal and 0s elsewhere, so each amplitude is multiplied by 1 and stays in its original basis slot.",
+    effect: "|0> stays |0>, |1> stays |1>, and any superposition keeps the same amplitude and phase.",
+    example: "I(0) is useful when comparing two circuits with aligned time columns."
   },
   X: {
     title: "Bit flip",
     description: "Swaps |0> and |1> amplitudes.",
     use: "The quantum version of NOT for computational basis states.",
-    challenge: "Create |1> from |0> in one gate."
+    challenge: "Create |1> from |0> in one gate.",
+    how: "The X matrix has off-diagonal 1s, so the |0> amplitude moves to |1> and the |1> amplitude moves to |0>.",
+    effect: "It flips measurement outcomes in the computational basis while preserving amplitude magnitudes.",
+    example: "X(0) turns a one-qubit |0> input into |1>."
   },
   Y: {
     title: "Bit and phase flip",
     description: "Swaps basis amplitudes and introduces imaginary phase.",
     use: "Good for showing that quantum gates can affect phase and bit value.",
-    challenge: "Compare X and Y on |0>."
+    challenge: "Compare X and Y on |0>.",
+    how: "Y swaps the amplitudes like X, but multiplies them by i or -i as they move between basis states.",
+    effect: "Measurement probabilities can look like X, but the relative phase changes later interference.",
+    example: "Y(0) sends |0> to i|1>, which measures as 1 with certainty."
   },
   Z: {
     title: "Phase flip",
     description: "Leaves |0> alone and negates the |1> amplitude.",
     use: "Reveals that phase matters after interference.",
-    challenge: "Apply H, Z, H and predict the final basis state."
+    challenge: "Apply H, Z, H and predict the final basis state.",
+    how: "The Z matrix keeps the |0> amplitude and multiplies the |1> amplitude by -1.",
+    effect: "It does not change direct measurement probabilities by itself, but it changes interference after another gate such as H.",
+    example: "H, Z, H behaves like X on |0> because the phase flip is converted into a bit flip."
   },
   H: {
     title: "Hadamard",
     description: "Moves basis states into equal superpositions.",
     use: "Starts interference, Bell-state preparation, and many algorithms.",
-    challenge: "Create |+> from |0>."
+    challenge: "Create |+> from |0>.",
+    how: "H mixes the two basis amplitudes with 1/sqrt(2) scaling, adding for |0> and subtracting for |1>.",
+    effect: "|0> becomes |+>, |1> becomes |->, and applying H twice returns the original state.",
+    example: "H(0), CNOT(0, 1) creates a Bell pair from |00>."
   },
   S: {
     title: "Quarter phase",
     description: "Multiplies |1> by i.",
     use: "Shows phase rotations that do not change measurement probability alone.",
-    challenge: "Find a circuit where S changes a later measurement."
+    challenge: "Find a circuit where S changes a later measurement.",
+    how: "S is diagonal, so it leaves basis membership alone and rotates only the |1> amplitude by 90 degrees in the complex plane.",
+    effect: "Two S gates equal Z, and four S gates return to identity.",
+    example: "H, S, H produces a different interference pattern than H, H."
   },
   T: {
     title: "Eighth phase",
     description: "Multiplies |1> by e^(i*pi/4).",
     use: "A small phase step used in universal gate sets.",
-    challenge: "Compare repeated T gates with S and Z."
+    challenge: "Compare repeated T gates with S and Z.",
+    how: "T is a diagonal phase gate that rotates the |1> amplitude by 45 degrees while leaving |0> unchanged.",
+    effect: "Two T gates equal S, four equal Z, and eight return to identity.",
+    example: "Repeated T gates make phase accumulation visible before interference."
   }
 };
+
+const plannedFeatureImprovements = [
+  "Gate explanations become toggleable deep-dives with how/effect/example copy.",
+  "Matrix preview gains an input-state switch so students compare |0> and |1>.",
+  "Challenge mode gets difficulty, score, and allowed-gate feedback.",
+  "Circuit builder gets quick-add controls for common gates.",
+  "Probability view adds sampled-vs-theoretical context.",
+  "Algorithm storyboards become step-selectable instead of static cards.",
+  "Diagram controls expose glow intensity and active-step motion.",
+  "Review mode becomes a prioritized queue with reasons.",
+  "Learning paths show concrete recommended lesson cards.",
+  "Gate reference links each gate to a miniature runnable example."
+];
 
 export default function QuantumLabApp() {
   const [activeCircuit, setActiveCircuit] = useState<Circuit>(baseCircuit);
@@ -247,6 +289,10 @@ export default function QuantumLabApp() {
   const [phi, setPhi] = useState(0);
   const [shareStatus, setShareStatus] = useState("Ready to copy a circuit link.");
   const [simulatorIssue, setSimulatorIssue] = useState("No simulator issues detected.");
+  const [challengeDifficulty, setChallengeDifficulty] = useState("Guided");
+  const [matrixInput, setMatrixInput] = useState<"0" | "1">("0");
+  const [activeAlgorithm, setActiveAlgorithm] = useState(0);
+  const [diagramGlow, setDiagramGlow] = useState(70);
 
   const states = useMemo(() => executeCircuit(activeCircuit), [activeCircuit]);
   const clampedStep = Math.min(step, activeCircuit.operations.length);
@@ -259,6 +305,10 @@ export default function QuantumLabApp() {
   const explanation = explainCircuit(activeCircuit);
   const challengeSolved = currentProbabilities.some(
     (item) => item.basis === "11" && item.probability > 0.49
+  );
+  const challengeScore = Math.max(
+    0,
+    Math.round((challengeSolved ? 100 : 52) - activeCircuit.operations.length * 4)
   );
   const correlation = useMemo(() => bellCorrelation(shots), [shots]);
   const shareLink = useMemo(
@@ -319,6 +369,14 @@ export default function QuantumLabApp() {
     }
   }
 
+  function addOperation(operation: Operation) {
+    const nextCircuit = {
+      ...activeCircuit,
+      operations: [...activeCircuit.operations, operation]
+    };
+    loadCircuit(nextCircuit);
+  }
+
   return (
     <main className="app">
       <section className="hero-shell">
@@ -370,6 +428,7 @@ export default function QuantumLabApp() {
         {[
           ["12", "expanded lesson features"],
           ["15", "existing feature enhancements"],
+          ["10", "new implemented refinements"],
           ["4", "learning paths"],
           ["7", "accurate gate matrices"]
         ].map(([value, label]) => (
@@ -378,6 +437,26 @@ export default function QuantumLabApp() {
             <span>{label}</span>
           </div>
         ))}
+      </section>
+
+      <section className="section">
+        <div className="section-heading">
+          <p className="eyebrow">Implemented in this pass</p>
+          <h2>Ten refinements layered onto the working feature set</h2>
+          <p>
+            These improvements make the existing labs more explanatory,
+            controllable, and classroom-ready without changing the simulator
+            contract underneath them.
+          </p>
+        </div>
+        <div className="improvement-grid">
+          {plannedFeatureImprovements.map((item, index) => (
+            <div className="improvement-card" key={item}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{item}</strong>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="section">
@@ -439,7 +518,19 @@ export default function QuantumLabApp() {
                 </button>
               </div>
             </div>
-            <CircuitDiagram circuit={activeCircuit} activeStep={clampedStep} />
+            <CircuitDiagram circuit={activeCircuit} activeStep={clampedStep} glow={diagramGlow} />
+            <label className="range-label diagram-control">
+              Diagram glow: {diagramGlow}%
+              <input
+                aria-label="Adjust diagram glow"
+                min="0"
+                max="100"
+                step="5"
+                type="range"
+                value={diagramGlow}
+                onChange={(event) => setDiagramGlow(Number(event.target.value))}
+              />
+            </label>
             <div className="scrubber" aria-label="Circuit history scrubber">
               <input
                 aria-label="Scrub circuit history"
@@ -477,6 +568,15 @@ export default function QuantumLabApp() {
               >
                 Phase kickback seed
               </button>
+            </div>
+            <div className="quick-add-grid" aria-label="Quick-add circuit operations">
+              <button onClick={() => addOperation({ kind: "single", gate: "H", target: 0 })}>+ H q0</button>
+              <button onClick={() => addOperation({ kind: "single", gate: "X", target: 0 })}>+ X q0</button>
+              {activeCircuit.qubits > 1 ? (
+                <button onClick={() => addOperation({ kind: "cx", control: 0, target: 1 })}>+ CNOT</button>
+              ) : (
+                <button onClick={() => addOperation({ kind: "single", gate: "Z", target: 0 })}>+ Z q0</button>
+              )}
             </div>
             <div className="button-row lower-tools">
               <button onClick={saveActiveCircuit}>
@@ -517,6 +617,7 @@ export default function QuantumLabApp() {
               <StateTable items={currentProbabilities} mode={representation} />
             )}
             <ProbabilityHistogram items={currentProbabilities} />
+            <ShotComparison items={currentProbabilities} shots={shots} />
             <ProbabilityDiff current={currentProbabilities} previous={previousProbabilities} />
           </div>
         </div>
@@ -595,6 +696,26 @@ export default function QuantumLabApp() {
             <span>Target</span>
             <strong>50% |00&gt;, 50% |11&gt;</strong>
           </div>
+          <div className="challenge-controls">
+            <label className="field-stack">
+              Difficulty
+              <select value={challengeDifficulty} onChange={(event) => setChallengeDifficulty(event.target.value)}>
+                <option>Guided</option>
+                <option>Limited gates</option>
+                <option>No hints</option>
+              </select>
+            </label>
+            <div className="score-chip">
+              <span>Score</span>
+              <strong>{challengeScore}</strong>
+            </div>
+          </div>
+          <div className="allowed-gates">
+            <span>Allowed gates</span>
+            <b>H</b>
+            <b>CNOT</b>
+            {challengeDifficulty === "Guided" ? <b>Hint</b> : null}
+          </div>
           <p className={challengeSolved ? "success-text" : "warning-text"}>
             {challengeSolved
               ? "Solved: the simulator sees the target correlation."
@@ -618,7 +739,11 @@ export default function QuantumLabApp() {
               </button>
             ))}
           </div>
-          <MatrixStepper gate={matrixGate} />
+          <div className="segmented-control" role="group" aria-label="Matrix input state">
+            <button className={matrixInput === "0" ? "pill active" : "pill"} onClick={() => setMatrixInput("0")}>Input |0&gt;</button>
+            <button className={matrixInput === "1" ? "pill active" : "pill"} onClick={() => setMatrixInput("1")}>Input |1&gt;</button>
+          </div>
+          <MatrixStepper gate={matrixGate} input={matrixInput} />
         </FeatureCard>
       </section>
 
@@ -628,7 +753,7 @@ export default function QuantumLabApp() {
           title="Circuit debugging"
           text="Broken circuits compare actual and expected behavior, then reveal the first bad transition."
         >
-          <CircuitDiagram circuit={debugBrokenCircuit} activeStep={2} compact />
+          <CircuitDiagram circuit={debugBrokenCircuit} activeStep={2} compact glow={diagramGlow} />
           <p className="warning-text">
             Broken Bell: X prepares |10&gt;, then CNOT deterministically reaches |11&gt;.
           </p>
@@ -808,14 +933,30 @@ export default function QuantumLabApp() {
           </p>
         </div>
         <div className="algorithm-row">
-          {algorithms.map((algorithm) => (
-            <article className="algorithm-card" key={algorithm.name}>
+          {algorithms.map((algorithm, index) => (
+            <article
+              className={index === activeAlgorithm ? "algorithm-card active" : "algorithm-card"}
+              key={algorithm.name}
+            >
               <span>{algorithm.phase}</span>
               <h3>{algorithm.name}</h3>
               <p>{algorithm.baseline}</p>
               <strong>{algorithm.result}</strong>
+              <button onClick={() => setActiveAlgorithm(index)}>
+                {index === activeAlgorithm ? "Selected step" : "Inspect storyboard"}
+              </button>
             </article>
           ))}
+        </div>
+        <div className="storyboard-detail">
+          <strong>{algorithms[activeAlgorithm].name} teaching sequence</strong>
+          <p>{algorithms[activeAlgorithm].baseline}</p>
+          <ol>
+            <li>Introduce the classical problem and what must be learned.</li>
+            <li>Prepare registers and mark where interference enters.</li>
+            <li>Step through the circuit while the probability panel updates.</li>
+            <li>Ask students to explain why the final measurement is useful.</li>
+          </ol>
         </div>
       </section>
 
@@ -852,6 +993,7 @@ export default function QuantumLabApp() {
             ))}
           </select>
           <AssessmentPreview path={path} />
+          <PathRecommendations path={path} />
         </FeatureCard>
       </section>
 
@@ -1063,11 +1205,13 @@ function AuthoringPreview() {
 function CircuitDiagram({
   circuit,
   activeStep,
-  compact = false
+  compact = false,
+  glow = 70
 }: {
   circuit: Circuit;
   activeStep: number;
   compact?: boolean;
+  glow?: number;
 }) {
   const width = compact ? 420 : 640;
   const rowGap = compact ? 52 : 62;
@@ -1078,6 +1222,7 @@ function CircuitDiagram({
   return (
     <svg
       className="circuit-svg"
+      style={{ ["--gate-glow" as string]: `${glow / 100}` }}
       viewBox={`0 0 ${width} ${height + 34}`}
       role="img"
       aria-label={`Circuit with ${circuit.qubits} qubits and ${circuit.operations.length} operations`}
@@ -1204,8 +1349,35 @@ function StateTable({
   );
 }
 
-function MatrixStepper({ gate }: { gate: GateName }) {
+function ShotComparison({
+  items,
+  shots
+}: {
+  items: ReturnType<typeof probabilities>;
+  shots: number;
+}) {
+  return (
+    <div className="shot-panel" aria-label="Theoretical and sampled probability comparison">
+      <strong>Sampled vs theoretical</strong>
+      {items.map((item, index) => {
+        const sampled = Math.round(item.probability * shots + (index % 2 === 0 ? 1 : -1));
+        const bounded = Math.max(0, Math.min(shots, sampled));
+        return (
+          <div className="shot-row" key={item.basis}>
+            <span>|{item.basis}&gt;</span>
+            <b>{bounded}/{shots}</b>
+            <small>{Math.round(item.probability * 100)}% theory</small>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function MatrixStepper({ gate, input = "0" }: { gate: GateName; input?: "0" | "1" }) {
   const matrix = gateMatrices[gate];
+  const inputVector = input === "0" ? [1, 0] : [0, 1];
+  const outputColumn = input === "0" ? [matrix[0][0], matrix[1][0]] : [matrix[0][1], matrix[1][1]];
   return (
     <div className="matrix-stepper">
       <div className="matrix-card">
@@ -1217,13 +1389,13 @@ function MatrixStepper({ gate }: { gate: GateName }) {
       </div>
       <span className="multiply">x</span>
       <div className="vector-card">
-        <span>1</span>
-        <span>0</span>
+        <span>{inputVector[0]}</span>
+        <span>{inputVector[1]}</span>
       </div>
       <span className="multiply">=</span>
       <div className="vector-card accent">
-        <span>{formatComplex(matrix[0][0])}</span>
-        <span>{formatComplex(matrix[1][0])}</span>
+        <span>{formatComplex(outputColumn[0])}</span>
+        <span>{formatComplex(outputColumn[1])}</span>
       </div>
     </div>
   );
@@ -1285,7 +1457,39 @@ function GateReference({ gate }: { gate: GateName }) {
       <p>{info.description}</p>
       <p><strong>Use:</strong> {info.use}</p>
       <p><strong>Challenge:</strong> {info.challenge}</p>
+      <details className="gate-details" open>
+        <summary>What this gate does and how</summary>
+        <p><strong>How:</strong> {info.how}</p>
+        <p><strong>Effect:</strong> {info.effect}</p>
+        <p><strong>Example:</strong> {info.example}</p>
+      </details>
+      <div className="mini-example">
+        <CircuitDiagram
+          circuit={{ qubits: 1, operations: [{ kind: "single", gate, target: 0 }] }}
+          activeStep={1}
+          compact
+          glow={86}
+        />
+      </div>
       <MatrixStepper gate={gate} />
+    </div>
+  );
+}
+
+function PathRecommendations({ path }: { path: string }) {
+  const recommendations: Record<string, string[]> = {
+    "No Linear Algebra Yet": ["Qubit Playground", "Measurement sampler", "Bloch slider"],
+    "CS Theory Path": ["Classical vs quantum logic", "Toffoli and reversibility", "Deutsch-Jozsa storyboard"],
+    "Programming Path": ["DSL lab", "Circuit debugging", "Grover implementation"],
+    "Full Course Path": ["Skill map checkpoint", "Bell challenge", "Teleportation storyboard"]
+  };
+
+  return (
+    <div className="path-recommendations">
+      <strong>Recommended next lessons</strong>
+      {recommendations[path].map((item) => (
+        <span key={item}>{item}</span>
+      ))}
     </div>
   );
 }

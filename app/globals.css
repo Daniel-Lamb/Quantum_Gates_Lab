@@ -233,7 +233,7 @@ textarea {
 .metric-row {
   display: grid;
   gap: 1px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   margin: 0 auto;
   max-width: 1280px;
   padding: 0 clamp(18px, 4vw, 58px) 52px;
@@ -400,7 +400,7 @@ textarea {
 .gate.active {
   fill: url("#gateFill");
   stroke: var(--teal);
-  filter: drop-shadow(0 8px 14px rgba(12, 128, 116, 0.22));
+  filter: drop-shadow(0 8px calc(10px + 12px * var(--gate-glow, 0.7)) rgba(12, 128, 116, calc(0.12 + 0.22 * var(--gate-glow, 0.7))));
 }
 
 .control,
@@ -466,6 +466,13 @@ textarea {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.quick-add-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 10px;
+}
+
 .lower-tools {
   border-top: 1px solid var(--line);
   margin-top: 14px;
@@ -479,6 +486,10 @@ textarea {
   font-size: 0.9rem;
   margin: 12px 0 !important;
   padding: 10px;
+}
+
+.diagram-control {
+  margin: 12px 0;
 }
 
 .state-table,
@@ -705,6 +716,38 @@ textarea {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.improvement-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.improvement-card {
+  backdrop-filter: blur(18px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(241, 255, 249, 0.58));
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  min-height: 146px;
+  padding: 14px;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.improvement-card:hover {
+  background: rgba(255, 255, 255, 0.86);
+  transform: translateY(-3px);
+}
+
+.improvement-card span {
+  color: var(--coral);
+  display: block;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.improvement-card strong {
+  line-height: 1.35;
+}
+
 .algorithm-row {
   display: grid;
   gap: 16px;
@@ -715,8 +758,16 @@ textarea {
   background: var(--ink);
   border-radius: 8px;
   color: #ffffff;
+  display: grid;
+  gap: 10px;
   min-height: 220px;
   padding: 18px;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.algorithm-card.active {
+  box-shadow: 0 0 0 2px var(--mint), 0 24px 60px rgba(12, 128, 116, 0.24);
+  transform: translateY(-4px);
 }
 
 .algorithm-card span {
@@ -740,6 +791,20 @@ textarea {
   color: #ffe6a8;
   display: block;
   line-height: 1.5;
+}
+
+.storyboard-detail {
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.storyboard-detail p,
+.storyboard-detail li {
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 .enhancement {
@@ -1019,6 +1084,117 @@ textarea {
   padding-left: 20px;
 }
 
+.challenge-controls {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 96px;
+}
+
+.score-chip {
+  align-items: center;
+  background: var(--ink);
+  border-radius: 8px;
+  color: #ffffff;
+  display: grid;
+  justify-items: center;
+  padding: 10px;
+}
+
+.score-chip span {
+  color: var(--mint);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.score-chip strong {
+  font-size: 1.8rem;
+}
+
+.allowed-gates {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.allowed-gates span {
+  color: var(--muted);
+}
+
+.allowed-gates b {
+  background: rgba(159, 244, 207, 0.48);
+  border: 1px solid rgba(12, 128, 116, 0.2);
+  border-radius: 999px;
+  color: var(--teal);
+  padding: 6px 10px;
+}
+
+.segmented-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.shot-panel {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 14px;
+}
+
+.shot-row {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 56px 76px minmax(0, 1fr);
+}
+
+.shot-row small {
+  color: var(--muted);
+}
+
+.gate-details {
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.gate-details summary {
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.gate-details p {
+  margin-top: 10px;
+}
+
+.mini-example {
+  display: grid;
+  gap: 8px;
+}
+
+.path-recommendations {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.path-recommendations span {
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  padding: 9px 10px;
+}
+
 @media (max-width: 1050px) {
   .hero-grid,
   .lab-layout,
@@ -1031,6 +1207,11 @@ textarea {
 
   .enhancement-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .improvement-grid,
+  .concept-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1048,7 +1229,10 @@ textarea {
 
   .metric-row,
   .button-grid,
-  .enhancement-grid {
+  .quick-add-grid,
+  .enhancement-grid,
+  .improvement-grid,
+  .concept-rail {
     grid-template-columns: 1fr;
   }
 
