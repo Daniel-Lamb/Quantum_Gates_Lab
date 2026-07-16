@@ -177,6 +177,267 @@ const gateInfo: Record<
   }
 };
 
+type InstructorQuestion = {
+  id: string;
+  topic: string;
+  format: string;
+  level: "Warmup" | "Core" | "Challenge";
+  prompt: string;
+  teaching: string;
+  expected: string;
+};
+
+const instructorTeachings = [
+  {
+    title: "Prediction before simulation",
+    note: "Ask students to commit to a probability distribution before stepping the circuit. Reveal the simulator only after they justify the prediction."
+  },
+  {
+    title: "Separate amplitude from probability",
+    note: "Have students name the complex amplitude first, then square its magnitude. This prevents treating amplitudes as direct percentages."
+  },
+  {
+    title: "Use gates as transformations",
+    note: "Frame each gate as a rule that moves or phases amplitudes, not as a magic symbol in a circuit diagram."
+  },
+  {
+    title: "Trace phase through interference",
+    note: "For phase gates, delay measurement and apply a later H so students can see phase become an observable probability change."
+  },
+  {
+    title: "Compare to reversible classical logic",
+    note: "Use CNOT, SWAP, and Toffoli to connect quantum circuits to classical logic while emphasizing superposition and entanglement."
+  }
+];
+
+const instructorQuestions: InstructorQuestion[] = [
+  {
+    id: "Q01",
+    topic: "Qubits",
+    format: "Concept check",
+    level: "Warmup",
+    prompt: "What information is needed to describe a one-qubit pure state besides the labels |0> and |1>?",
+    teaching: "Prompt students to write alpha|0> + beta|1>, then ask what constraints alpha and beta must satisfy.",
+    expected: "A state needs complex amplitudes for |0> and |1>, with squared magnitudes summing to 1."
+  },
+  {
+    id: "Q02",
+    topic: "Superposition",
+    format: "Prediction",
+    level: "Core",
+    prompt: "Starting from |0>, what state does H create, and what measurement probabilities should appear?",
+    teaching: "Use the probability histogram after students predict both amplitudes and probabilities.",
+    expected: "H creates (|0> + |1>) / sqrt(2), so measurement gives 0 and 1 with 50% probability each."
+  },
+  {
+    id: "Q03",
+    topic: "Measurement",
+    format: "Short answer",
+    level: "Core",
+    prompt: "If a qubit is in sqrt(0.75)|0> + sqrt(0.25)|1>, what does measurement do to the state?",
+    teaching: "Ask students to distinguish probability of outcome from the post-measurement state.",
+    expected: "Measurement returns 0 with 75% probability or 1 with 25%, then collapses the state to the observed basis state."
+  },
+  {
+    id: "Q04",
+    topic: "Bloch sphere",
+    format: "Diagram prompt",
+    level: "Warmup",
+    prompt: "Where are |0>, |1>, |+>, and |-> located on the Bloch sphere?",
+    teaching: "Use the Bloch controls to connect polar angle to basis balance and azimuth to phase.",
+    expected: "|0> is north, |1> is south, |+> is on +X, and |-> is on -X."
+  },
+  {
+    id: "Q05",
+    topic: "Bloch sphere",
+    format: "Reasoning",
+    level: "Challenge",
+    prompt: "Why can two states with the same measurement probabilities still be different quantum states?",
+    teaching: "Compare |+> and |->: same Z-basis probabilities, different relative phase.",
+    expected: "Measurement in one basis can hide relative phase, but later gates can convert that phase into different probabilities."
+  },
+  {
+    id: "Q06",
+    topic: "X gate",
+    format: "Quick build",
+    level: "Warmup",
+    prompt: "Build the shortest circuit that turns |0> into |1>. What matrix action caused it?",
+    teaching: "Open the matrix view and point out the off-diagonal entries.",
+    expected: "Apply X. Its matrix swaps the |0> and |1> amplitudes."
+  },
+  {
+    id: "Q07",
+    topic: "Z gate",
+    format: "Prediction",
+    level: "Core",
+    prompt: "What changes when Z is applied to |+>, and why does direct measurement still look 50/50?",
+    teaching: "Have students write |+> before and after Z, then measure in the computational basis.",
+    expected: "Z changes |+> to |-> by negating the |1> amplitude. The magnitudes remain equal, so Z-basis measurement stays 50/50."
+  },
+  {
+    id: "Q08",
+    topic: "H gate",
+    format: "Circuit explanation",
+    level: "Core",
+    prompt: "Why does H followed by H return a qubit to its starting state?",
+    teaching: "Use the gate-by-gate simulator and ask students to track how amplitudes add and subtract.",
+    expected: "H is its own inverse. The second H reverses the mixing done by the first H."
+  },
+  {
+    id: "Q09",
+    topic: "Y gate",
+    format: "Compare",
+    level: "Core",
+    prompt: "How are X and Y similar on |0>, and what important difference appears in the amplitude?",
+    teaching: "Ask for the measurement distribution first, then the actual state vector.",
+    expected: "Both measure as |1> with certainty from |0>, but Y adds an imaginary phase, producing i|1>."
+  },
+  {
+    id: "Q10",
+    topic: "S and T gates",
+    format: "Pattern finding",
+    level: "Core",
+    prompt: "How many T gates equal S, how many equal Z, and how many return to identity?",
+    teaching: "Use repeated phase gates to make phase accumulation concrete.",
+    expected: "Two T gates equal S, four T gates equal Z, and eight T gates equal identity up to the full phase cycle."
+  },
+  {
+    id: "Q11",
+    topic: "Phase gates",
+    format: "Challenge",
+    level: "Challenge",
+    prompt: "Design a circuit where a phase gate changes the final measurement probabilities.",
+    teaching: "Steer students toward H, phase, H so phase is converted into interference.",
+    expected: "A circuit such as H, Z, H changes |0> into |1>, showing phase can become observable through interference."
+  },
+  {
+    id: "Q12",
+    topic: "CNOT",
+    format: "Truth table",
+    level: "Warmup",
+    prompt: "Complete the CNOT truth table for inputs 00, 01, 10, and 11.",
+    teaching: "Emphasize that the target flips only when the control is 1.",
+    expected: "00 -> 00, 01 -> 01, 10 -> 11, and 11 -> 10."
+  },
+  {
+    id: "Q13",
+    topic: "Entanglement",
+    format: "Explain",
+    level: "Core",
+    prompt: "Why does H on q0 followed by CNOT q0->q1 create a Bell pair?",
+    teaching: "Step the active circuit and connect the two branches |00> and |10> before CNOT to |00> and |11> after CNOT.",
+    expected: "H creates two branches for q0, then CNOT copies the branch value into q1, producing (|00> + |11>) / sqrt(2)."
+  },
+  {
+    id: "Q14",
+    topic: "Entanglement",
+    format: "Misconception check",
+    level: "Challenge",
+    prompt: "Why is a Bell pair not the same as two independent fair-coin qubits?",
+    teaching: "Compare marginal outcomes with joint outcomes in the probability histogram.",
+    expected: "Each qubit alone looks random, but their joint outcomes are perfectly correlated: only 00 and 11 appear."
+  },
+  {
+    id: "Q15",
+    topic: "CZ",
+    format: "Reasoning",
+    level: "Core",
+    prompt: "What does CZ change, and why can it be hard to notice without later interference?",
+    teaching: "Have students mark which basis state receives the phase flip.",
+    expected: "CZ negates the |11> amplitude. Probabilities do not change immediately, but later interference can reveal the phase."
+  },
+  {
+    id: "Q16",
+    topic: "SWAP",
+    format: "Circuit reading",
+    level: "Warmup",
+    prompt: "What should a SWAP gate do to the two-qubit basis states 01 and 10?",
+    teaching: "Use this to connect wire position to qubit identity in a circuit diagram.",
+    expected: "SWAP exchanges the qubit values: 01 becomes 10 and 10 becomes 01."
+  },
+  {
+    id: "Q17",
+    topic: "Toffoli",
+    format: "Classical bridge",
+    level: "Core",
+    prompt: "Why is Toffoli important when comparing classical and quantum logic?",
+    teaching: "Use Toffoli as a reversible AND-like operation before discussing quantum reversibility.",
+    expected: "Toffoli flips a target only when both controls are 1, making it a reversible way to embed classical logic."
+  },
+  {
+    id: "Q18",
+    topic: "Circuit diagrams",
+    format: "Debugging",
+    level: "Core",
+    prompt: "Given a circuit with CNOT control and target on the same qubit, what is wrong and how should it be repaired?",
+    teaching: "Use the simulator error explainer, then ask students to propose a valid pair of qubit indices.",
+    expected: "A controlled gate needs distinct control and target qubits. Repair it by selecting different wires."
+  },
+  {
+    id: "Q19",
+    topic: "State vector",
+    format: "Interpretation",
+    level: "Core",
+    prompt: "In a two-qubit state vector, what do the entries for |00>, |01>, |10>, and |11> represent?",
+    teaching: "Point to the state vector panel and ask students to map each basis label to an amplitude.",
+    expected: "Each entry is the complex amplitude for that basis state; squared magnitude gives that basis state's measurement probability."
+  },
+  {
+    id: "Q20",
+    topic: "Probability histograms",
+    format: "Prediction",
+    level: "Warmup",
+    prompt: "If the histogram shows only 00 and 11 at 50% each, what can you infer and what can you not infer?",
+    teaching: "Use this to separate probability data from full state-vector phase information.",
+    expected: "You can infer correlated measurement outcomes, but not all relative phase information from that histogram alone."
+  },
+  {
+    id: "Q21",
+    topic: "Classical vs quantum",
+    format: "Compare",
+    level: "Core",
+    prompt: "How is quantum superposition different from a classical random bit?",
+    teaching: "Ask students to name an experiment where interference distinguishes the two.",
+    expected: "A random bit has hidden classical uncertainty; a superposition has amplitudes that can interfere before measurement."
+  },
+  {
+    id: "Q22",
+    topic: "Deutsch-Jozsa",
+    format: "Algorithm sketch",
+    level: "Challenge",
+    prompt: "What question does Deutsch-Jozsa answer, and where does interference help?",
+    teaching: "Start from the classical baseline, then mark the oracle and final H layer in the storyboard.",
+    expected: "It distinguishes constant from balanced functions with fewer queries by using phase kickback and interference."
+  },
+  {
+    id: "Q23",
+    topic: "Grover search",
+    format: "Algorithm sketch",
+    level: "Challenge",
+    prompt: "What are the two repeating ideas in Grover search?",
+    teaching: "Have students identify the oracle marking step and the diffusion amplification step.",
+    expected: "Grover alternates marking the target state and amplifying it so the target measurement probability rises."
+  },
+  {
+    id: "Q24",
+    topic: "Teleportation",
+    format: "Sequence",
+    level: "Challenge",
+    prompt: "Why does quantum teleportation need both entanglement and classical bits?",
+    teaching: "Ask students to order the stages: shared Bell pair, local operations, measurement, classical communication, correction.",
+    expected: "Entanglement supplies the quantum correlation, while classical bits tell the receiver which correction to apply."
+  },
+  {
+    id: "Q25",
+    topic: "Explain this circuit",
+    format: "Synthesis",
+    level: "Challenge",
+    prompt: "Explain the active circuit using three layers: gate actions, state-vector changes, and final measurement probabilities.",
+    teaching: "Use the Explain this circuit panel and require students to cite one gate, one amplitude change, and one histogram outcome.",
+    expected: "A strong answer connects each operation to amplitude movement or phase, then justifies the final distribution from the state vector."
+  }
+];
+
 export default function QuantumLabApp() {
   const [activeCircuit, setActiveCircuit] = useState<Circuit>(baseCircuit);
   const [step, setStep] = useState(baseCircuit.operations.length);
@@ -887,7 +1148,7 @@ export default function QuantumLabApp() {
       </section>
 
       <section className="section" id="instructor">
-        <div className="panel instructor-panel">
+        <div className="instructor-panel">
           <div>
             <p className="eyebrow">Instructor mode</p>
             <h2>Presentation-ready demos, reveal controls, and exportable diagrams</h2>
@@ -910,6 +1171,45 @@ export default function QuantumLabApp() {
             {showAnswers
               ? "Answer: H on q0 followed by CNOT q0->q1 creates the Bell distribution."
               : "Answers hidden for classroom prediction."}
+          </div>
+          <div className="teaching-moves" aria-label="Instructor teaching moves">
+            {instructorTeachings.map((item) => (
+              <article className="teaching-card" key={item.title}>
+                <strong>{item.title}</strong>
+                <p>{item.note}</p>
+              </article>
+            ))}
+          </div>
+          <div className="instructor-bank">
+            <div className="bank-heading">
+              <div>
+                <p className="eyebrow">Question plan</p>
+                <h3>25 prompts for lessons, checkpoints, and discussion</h3>
+              </div>
+              <span>{instructorQuestions.length} questions</span>
+            </div>
+            <div className="question-bank-grid">
+              {instructorQuestions.map((question) => (
+                <article className="question-card" key={question.id}>
+                  <div className="question-meta">
+                    <span>{question.id}</span>
+                    <span>{question.topic}</span>
+                    <span>{question.level}</span>
+                  </div>
+                  <strong>{question.prompt}</strong>
+                  <p>{question.teaching}</p>
+                  <div className="question-format">{question.format}</div>
+                  {showAnswers ? (
+                    <div className="answer-note">
+                      <span>Expected answer</span>
+                      <p>{question.expected}</p>
+                    </div>
+                  ) : (
+                    <div className="answer-note muted-answer">Reveal answers to show the model response.</div>
+                  )}
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
