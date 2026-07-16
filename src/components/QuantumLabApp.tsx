@@ -75,84 +75,6 @@ const algorithms = [
   }
 ];
 
-const enhancements = [
-  {
-    title: "Course dashboard skill map",
-    status: "Live",
-    detail: "Concept nodes now show sequence, progress, and next-step recommendations."
-  },
-  {
-    title: "Lesson preflight checks",
-    status: "Live",
-    detail: "Readiness questions adapt the student path before a lesson starts."
-  },
-  {
-    title: "Prediction before reveal pattern",
-    status: "Live",
-    detail: "Circuit outcomes stay hidden until students commit to a prediction."
-  },
-  {
-    title: "Misconception-aware feedback",
-    status: "Live",
-    detail: "Wrong answers explain the tempting mistake, not just the correct fact."
-  },
-  {
-    title: "State representation toggle",
-    status: "Live",
-    detail: "Probability, amplitude, and Dirac summaries all read from one state."
-  },
-  {
-    title: "Circuit history scrubber",
-    status: "Live",
-    detail: "A slider and step rail scrub through the exact simulator history."
-  },
-  {
-    title: "Saved circuit gallery",
-    status: "Live",
-    detail: "Students can save current circuits into a local example gallery."
-  },
-  {
-    title: "Shareable circuit URLs",
-    status: "Live",
-    detail: "The current DSL is encoded into a copyable share link."
-  },
-  {
-    title: "Simulator error explainers",
-    status: "Live",
-    detail: "Invalid operations become actionable teaching feedback."
-  },
-  {
-    title: "Visual diff for circuit changes",
-    status: "Live",
-    detail: "Probability deltas show what changed between adjacent steps."
-  },
-  {
-    title: "Gate palette learning states",
-    status: "Live",
-    detail: "Gates unlock by lesson stage with contextual labels."
-  },
-  {
-    title: "Accessibility-first diagram summaries",
-    status: "Live",
-    detail: "Every diagram has a text summary tied to the same circuit data."
-  },
-  {
-    title: "Lesson authoring preview",
-    status: "Live",
-    detail: "Metadata, embedded interactives, and checkpoint coverage are previewed."
-  },
-  {
-    title: "Performance budget panel",
-    status: "Live",
-    detail: "A qubit slider teaches exponential state-vector growth."
-  },
-  {
-    title: "Review mode",
-    status: "Live",
-    detail: "Missed concepts become a short spaced-review queue."
-  }
-];
-
 const conceptMap = [
   { title: "Qubits", progress: 100, note: "basis states and amplitudes" },
   { title: "Gates", progress: 86, note: "X, Z, H, phase gates" },
@@ -255,19 +177,6 @@ const gateInfo: Record<
   }
 };
 
-const plannedFeatureImprovements = [
-  "Gate explanations become toggleable deep-dives with how/effect/example copy.",
-  "Matrix preview gains an input-state switch so students compare |0> and |1>.",
-  "Challenge mode gets difficulty, score, and allowed-gate feedback.",
-  "Circuit builder gets quick-add controls for common gates.",
-  "Probability view adds sampled-vs-theoretical context.",
-  "Algorithm storyboards become step-selectable instead of static cards.",
-  "Diagram controls expose glow intensity and active-step motion.",
-  "Review mode becomes a prioritized queue with reasons.",
-  "Learning paths show concrete recommended lesson cards.",
-  "Gate reference links each gate to a miniature runnable example."
-];
-
 export default function QuantumLabApp() {
   const [activeCircuit, setActiveCircuit] = useState<Circuit>(baseCircuit);
   const [step, setStep] = useState(baseCircuit.operations.length);
@@ -293,6 +202,10 @@ export default function QuantumLabApp() {
   const [matrixInput, setMatrixInput] = useState<"0" | "1">("0");
   const [activeAlgorithm, setActiveAlgorithm] = useState(0);
   const [diagramGlow, setDiagramGlow] = useState(70);
+  const [shaderPhase, setShaderPhase] = useState(42);
+  const [shaderIntensity, setShaderIntensity] = useState(72);
+  const [shaderFrequency, setShaderFrequency] = useState(46);
+  const [shaderSpeed, setShaderSpeed] = useState(34);
 
   const states = useMemo(() => executeCircuit(activeCircuit), [activeCircuit]);
   const clampedStep = Math.min(step, activeCircuit.operations.length);
@@ -407,9 +320,9 @@ export default function QuantumLabApp() {
                 <Play aria-hidden="true" size={18} />
                 Open lab
               </a>
-              <a className="secondary-action" href="#enhancements">
+              <a className="secondary-action" href="#shader">
                 <Sparkles aria-hidden="true" size={18} />
-                View enhancements
+                Tune field
               </a>
             </div>
           </div>
@@ -426,9 +339,9 @@ export default function QuantumLabApp() {
 
       <section className="metric-row" aria-label="Feature coverage">
         {[
-          ["12", "expanded lesson features"],
-          ["15", "existing feature enhancements"],
-          ["10", "new implemented refinements"],
+          ["Live", "interactive simulator"],
+          ["SVG", "accurate circuit diagrams"],
+          ["Shader", "phase field controls"],
           ["4", "learning paths"],
           ["7", "accurate gate matrices"]
         ].map(([value, label]) => (
@@ -439,24 +352,17 @@ export default function QuantumLabApp() {
         ))}
       </section>
 
-      <section className="section">
-        <div className="section-heading">
-          <p className="eyebrow">Implemented in this pass</p>
-          <h2>Ten refinements layered onto the working feature set</h2>
-          <p>
-            These improvements make the existing labs more explanatory,
-            controllable, and classroom-ready without changing the simulator
-            contract underneath them.
-          </p>
-        </div>
-        <div className="improvement-grid">
-          {plannedFeatureImprovements.map((item, index) => (
-            <div className="improvement-card" key={item}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{item}</strong>
-            </div>
-          ))}
-        </div>
+      <section className="section" id="shader">
+        <QuantumShaderPanel
+          phase={shaderPhase}
+          intensity={shaderIntensity}
+          frequency={shaderFrequency}
+          speed={shaderSpeed}
+          onPhase={setShaderPhase}
+          onIntensity={setShaderIntensity}
+          onFrequency={setShaderFrequency}
+          onSpeed={setShaderSpeed}
+        />
       </section>
 
       <section className="section">
@@ -1025,25 +931,6 @@ export default function QuantumLabApp() {
         </div>
       </section>
 
-      <section className="section" id="enhancements">
-        <div className="section-heading">
-          <p className="eyebrow">Enhancements incorporated</p>
-          <h2>Fifteen upgrades to the existing feature set</h2>
-          <p>
-            These enhancements are represented in the app surface and preserved
-            in the repository planning docs for deeper implementation loops.
-          </p>
-        </div>
-        <div className="enhancement-grid">
-          {enhancements.map((item, index) => (
-            <div className="enhancement" key={item.title}>
-              <span>{String(index + 1).padStart(2, "0")} / {item.status}</span>
-              <strong>{item.title}</strong>
-              <small>{item.detail}</small>
-            </div>
-          ))}
-        </div>
-      </section>
     </main>
   );
 }
@@ -1070,6 +957,107 @@ function FeatureCard({
       </div>
       {children}
     </article>
+  );
+}
+
+function QuantumShaderPanel({
+  phase,
+  intensity,
+  frequency,
+  speed,
+  onPhase,
+  onIntensity,
+  onFrequency,
+  onSpeed
+}: {
+  phase: number;
+  intensity: number;
+  frequency: number;
+  speed: number;
+  onPhase: (value: number) => void;
+  onIntensity: (value: number) => void;
+  onFrequency: (value: number) => void;
+  onSpeed: (value: number) => void;
+}) {
+  const shaderStyle = {
+    "--shader-phase": `${phase}%`,
+    "--shader-intensity": `${intensity / 100}`,
+    "--shader-frequency": `${frequency}%`,
+    "--shader-speed": `${Math.max(8, 56 - speed / 2)}s`
+  } as React.CSSProperties;
+
+  return (
+    <div className="shader-panel glass-panel">
+      <div className="shader-copy">
+        <p className="eyebrow">Quantum field</p>
+        <h2>Phase and interference shader</h2>
+        <p>
+          Tune the field to see how phase, frequency, and intensity change the
+          visual interference pattern around the circuit workspace.
+        </p>
+      </div>
+      <div className="shader-stage" style={shaderStyle} aria-label="Interactive phase field shader">
+        <div className="shader-orbit orbit-a" />
+        <div className="shader-orbit orbit-b" />
+        <div className="shader-core" />
+        <svg viewBox="0 0 520 320" role="img" aria-label="Layered interference lines">
+          <defs>
+            <filter id="shader-warp">
+              <feTurbulence
+                baseFrequency={`${0.006 + frequency / 6000} ${0.018 + phase / 8000}`}
+                numOctaves="3"
+                seed={Math.round(phase)}
+              />
+              <feDisplacementMap in="SourceGraphic" scale={8 + intensity / 8} />
+            </filter>
+            <linearGradient id="shader-line" x1="0%" x2="100%">
+              <stop offset="0%" stopColor="#0c8074" />
+              <stop offset="50%" stopColor="#c49322" />
+              <stop offset="100%" stopColor="#6254b8" />
+            </linearGradient>
+          </defs>
+          {Array.from({ length: 8 }, (_, index) => (
+            <path
+              className="shader-wave"
+              d={`M ${-20 + index * 4} ${42 + index * 32} C 120 ${10 + phase / 2 + index * 9}, 280 ${260 - frequency + index * 5}, 540 ${70 + index * 24}`}
+              filter="url(#shader-warp)"
+              key={index}
+            />
+          ))}
+        </svg>
+      </div>
+      <div className="shader-controls">
+        <ShaderSlider label="Phase" value={phase} onChange={onPhase} />
+        <ShaderSlider label="Intensity" value={intensity} onChange={onIntensity} />
+        <ShaderSlider label="Frequency" value={frequency} onChange={onFrequency} />
+        <ShaderSlider label="Motion" value={speed} onChange={onSpeed} />
+      </div>
+    </div>
+  );
+}
+
+function ShaderSlider({
+  label,
+  value,
+  onChange
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="shader-slider">
+      <span>{label}</span>
+      <strong>{value}%</strong>
+      <input
+        min="0"
+        max="100"
+        step="1"
+        type="range"
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    </label>
   );
 }
 
