@@ -202,10 +202,6 @@ export default function QuantumLabApp() {
   const [matrixInput, setMatrixInput] = useState<"0" | "1">("0");
   const [activeAlgorithm, setActiveAlgorithm] = useState(0);
   const [diagramGlow, setDiagramGlow] = useState(70);
-  const [shaderPhase, setShaderPhase] = useState(42);
-  const [shaderIntensity, setShaderIntensity] = useState(72);
-  const [shaderFrequency, setShaderFrequency] = useState(46);
-  const [shaderSpeed, setShaderSpeed] = useState(34);
 
   const states = useMemo(() => executeCircuit(activeCircuit), [activeCircuit]);
   const clampedStep = Math.min(step, activeCircuit.operations.length);
@@ -320,9 +316,9 @@ export default function QuantumLabApp() {
                 <Play aria-hidden="true" size={18} />
                 Open lab
               </a>
-              <a className="secondary-action" href="#shader">
+              <a className="secondary-action" href="#lessons">
                 <Sparkles aria-hidden="true" size={18} />
-                Tune field
+                Explore lessons
               </a>
             </div>
           </div>
@@ -341,7 +337,7 @@ export default function QuantumLabApp() {
         {[
           ["Live", "interactive simulator"],
           ["SVG", "accurate circuit diagrams"],
-          ["Shader", "phase field controls"],
+          ["Flow", "animated learning space"],
           ["4", "learning paths"],
           ["7", "accurate gate matrices"]
         ].map(([value, label]) => (
@@ -350,19 +346,6 @@ export default function QuantumLabApp() {
             <span>{label}</span>
           </div>
         ))}
-      </section>
-
-      <section className="section" id="shader">
-        <QuantumShaderPanel
-          phase={shaderPhase}
-          intensity={shaderIntensity}
-          frequency={shaderFrequency}
-          speed={shaderSpeed}
-          onPhase={setShaderPhase}
-          onIntensity={setShaderIntensity}
-          onFrequency={setShaderFrequency}
-          onSpeed={setShaderSpeed}
-        />
       </section>
 
       <section className="section">
@@ -957,107 +940,6 @@ function FeatureCard({
       </div>
       {children}
     </article>
-  );
-}
-
-function QuantumShaderPanel({
-  phase,
-  intensity,
-  frequency,
-  speed,
-  onPhase,
-  onIntensity,
-  onFrequency,
-  onSpeed
-}: {
-  phase: number;
-  intensity: number;
-  frequency: number;
-  speed: number;
-  onPhase: (value: number) => void;
-  onIntensity: (value: number) => void;
-  onFrequency: (value: number) => void;
-  onSpeed: (value: number) => void;
-}) {
-  const shaderStyle = {
-    "--shader-phase": `${phase}%`,
-    "--shader-intensity": `${intensity / 100}`,
-    "--shader-frequency": `${frequency}%`,
-    "--shader-speed": `${Math.max(8, 56 - speed / 2)}s`
-  } as React.CSSProperties;
-
-  return (
-    <div className="shader-panel glass-panel">
-      <div className="shader-copy">
-        <p className="eyebrow">Quantum field</p>
-        <h2>Phase and interference shader</h2>
-        <p>
-          Tune the field to see how phase, frequency, and intensity change the
-          visual interference pattern around the circuit workspace.
-        </p>
-      </div>
-      <div className="shader-stage" style={shaderStyle} aria-label="Interactive phase field shader">
-        <div className="shader-orbit orbit-a" />
-        <div className="shader-orbit orbit-b" />
-        <div className="shader-core" />
-        <svg viewBox="0 0 520 320" role="img" aria-label="Layered interference lines">
-          <defs>
-            <filter id="shader-warp">
-              <feTurbulence
-                baseFrequency={`${0.006 + frequency / 6000} ${0.018 + phase / 8000}`}
-                numOctaves="3"
-                seed={Math.round(phase)}
-              />
-              <feDisplacementMap in="SourceGraphic" scale={8 + intensity / 8} />
-            </filter>
-            <linearGradient id="shader-line" x1="0%" x2="100%">
-              <stop offset="0%" stopColor="#0c8074" />
-              <stop offset="50%" stopColor="#c49322" />
-              <stop offset="100%" stopColor="#6254b8" />
-            </linearGradient>
-          </defs>
-          {Array.from({ length: 8 }, (_, index) => (
-            <path
-              className="shader-wave"
-              d={`M ${-20 + index * 4} ${42 + index * 32} C 120 ${10 + phase / 2 + index * 9}, 280 ${260 - frequency + index * 5}, 540 ${70 + index * 24}`}
-              filter="url(#shader-warp)"
-              key={index}
-            />
-          ))}
-        </svg>
-      </div>
-      <div className="shader-controls">
-        <ShaderSlider label="Phase" value={phase} onChange={onPhase} />
-        <ShaderSlider label="Intensity" value={intensity} onChange={onIntensity} />
-        <ShaderSlider label="Frequency" value={frequency} onChange={onFrequency} />
-        <ShaderSlider label="Motion" value={speed} onChange={onSpeed} />
-      </div>
-    </div>
-  );
-}
-
-function ShaderSlider({
-  label,
-  value,
-  onChange
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  return (
-    <label className="shader-slider">
-      <span>{label}</span>
-      <strong>{value}%</strong>
-      <input
-        min="0"
-        max="100"
-        step="1"
-        type="range"
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-      />
-    </label>
   );
 }
 

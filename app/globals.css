@@ -26,15 +26,10 @@ html {
 
 body {
   margin: 0;
-  background:
-    linear-gradient(135deg, rgba(12, 128, 116, 0.18), transparent 32%),
-    linear-gradient(315deg, rgba(196, 147, 34, 0.14), transparent 34%),
-    linear-gradient(90deg, rgba(16, 19, 20, 0.05) 1px, transparent 1px),
-    linear-gradient(rgba(16, 19, 20, 0.05) 1px, transparent 1px),
-    var(--paper);
-  background-size: 44px 44px;
+  background: #e7f4f0;
   color: var(--ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow-x: hidden;
 }
 
 button,
@@ -111,7 +106,71 @@ textarea {
 }
 
 .app {
+  isolation: isolate;
   min-height: 100vh;
+  position: relative;
+}
+
+.app::before,
+.app::after {
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+}
+
+.app::before {
+  animation: site-shader-flow 42s ease-in-out infinite alternate;
+  background:
+    conic-gradient(from 112deg at 18% 24%, rgba(37, 122, 84, 0.72), rgba(17, 139, 153, 0.44), rgba(39, 111, 159, 0.7), rgba(129, 231, 198, 0.5), rgba(37, 122, 84, 0.72)),
+    conic-gradient(from 284deg at 78% 18%, rgba(35, 125, 177, 0.64), rgba(97, 218, 189, 0.42), rgba(10, 91, 104, 0.58), rgba(34, 164, 130, 0.48), rgba(35, 125, 177, 0.64)),
+    linear-gradient(130deg, rgba(231, 244, 240, 0.92), rgba(202, 238, 237, 0.68) 42%, rgba(219, 241, 231, 0.88));
+  background-blend-mode: screen, multiply, normal;
+  filter: saturate(1.18);
+  transform: scale(1.08);
+  z-index: -2;
+}
+
+.app::after {
+  animation: site-shader-grain 28s linear infinite;
+  background:
+    repeating-linear-gradient(110deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 18px),
+    linear-gradient(90deg, rgba(12, 128, 116, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(39, 111, 159, 0.07) 1px, transparent 1px);
+  background-size: auto, 44px 44px, 44px 44px;
+  mix-blend-mode: soft-light;
+  opacity: 0.62;
+  z-index: -1;
+}
+
+@keyframes site-shader-flow {
+  0% {
+    background-position: 0% 40%, 100% 20%, center;
+    filter: hue-rotate(0deg) saturate(1.1);
+    transform: scale(1.08) rotate(0deg);
+  }
+
+  50% {
+    background-position: 58% 16%, 32% 74%, center;
+    filter: hue-rotate(8deg) saturate(1.22);
+    transform: scale(1.12) rotate(1.5deg);
+  }
+
+  100% {
+    background-position: 100% 64%, 0% 42%, center;
+    filter: hue-rotate(-6deg) saturate(1.16);
+    transform: scale(1.09) rotate(-1deg);
+  }
+}
+
+@keyframes site-shader-grain {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-44px, 44px, 0);
+  }
 }
 
 .hero-shell {
@@ -778,199 +837,6 @@ textarea {
   padding: 20px;
 }
 
-.shader-panel {
-  align-items: stretch;
-  display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(260px, 0.58fr) minmax(360px, 1fr) minmax(240px, 0.52fr);
-  overflow: hidden;
-  position: relative;
-}
-
-.shader-panel::before {
-  background:
-    radial-gradient(circle at 20% 10%, rgba(159, 244, 207, 0.34), transparent 28%),
-    radial-gradient(circle at 84% 24%, rgba(98, 84, 184, 0.2), transparent 32%);
-  content: "";
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
-}
-
-.shader-copy,
-.shader-controls,
-.shader-stage {
-  position: relative;
-  z-index: 1;
-}
-
-.shader-copy h2 {
-  font-size: clamp(2rem, 4vw, 3.6rem);
-  line-height: 1;
-  margin: 0 0 12px;
-}
-
-.shader-copy p {
-  color: var(--muted);
-  line-height: 1.65;
-}
-
-.shader-stage {
-  background:
-    radial-gradient(circle at var(--shader-phase, 42%) 42%, rgba(159, 244, 207, calc(0.22 + 0.48 * var(--shader-intensity, 0.72))), transparent 24%),
-    radial-gradient(circle at calc(100% - var(--shader-frequency, 46%)) 66%, rgba(98, 84, 184, calc(0.12 + 0.34 * var(--shader-intensity, 0.72))), transparent 28%),
-    linear-gradient(135deg, rgba(16, 19, 20, 0.96), rgba(20, 56, 52, 0.88));
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 24px 60px rgba(13, 28, 27, 0.2);
-  min-height: 320px;
-  overflow: hidden;
-}
-
-.shader-stage::before,
-.shader-stage::after {
-  border-radius: 999px;
-  content: "";
-  filter: blur(8px);
-  opacity: calc(0.36 + 0.42 * var(--shader-intensity, 0.72));
-  position: absolute;
-}
-
-.shader-stage::before {
-  animation: shader-drift var(--shader-speed, 39s) linear infinite;
-  background: conic-gradient(from 120deg, transparent, rgba(159, 244, 207, 0.64), transparent, rgba(196, 147, 34, 0.5), transparent);
-  height: 420px;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 420px;
-}
-
-.shader-stage::after {
-  animation: shader-drift calc(var(--shader-speed, 39s) * 1.45) linear infinite reverse;
-  background: conic-gradient(from 40deg, rgba(98, 84, 184, 0.52), transparent, rgba(12, 128, 116, 0.52), transparent);
-  height: 260px;
-  right: -54px;
-  top: 20px;
-  width: 260px;
-}
-
-.shader-stage svg {
-  height: 100%;
-  inset: 0;
-  mix-blend-mode: screen;
-  opacity: calc(0.42 + 0.42 * var(--shader-intensity, 0.72));
-  position: absolute;
-  width: 100%;
-  z-index: 2;
-}
-
-.shader-wave {
-  animation: shader-slide var(--shader-speed, 39s) ease-in-out infinite alternate;
-  fill: none;
-  stroke: url("#shader-line");
-  stroke-linecap: round;
-  stroke-width: 2.4;
-}
-
-.shader-core {
-  background: radial-gradient(circle, #ffffff, var(--mint) 28%, rgba(12, 128, 116, 0.12) 62%, transparent 70%);
-  border-radius: 999px;
-  box-shadow: 0 0 calc(42px + 42px * var(--shader-intensity, 0.72)) rgba(159, 244, 207, 0.78);
-  height: 74px;
-  left: calc(20% + var(--shader-phase, 42%) / 2);
-  position: absolute;
-  top: calc(48% + (var(--shader-frequency, 46%) - 50%) / 5);
-  transform: translate(-50%, -50%);
-  width: 74px;
-  z-index: 3;
-}
-
-.shader-orbit {
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 50%;
-  height: 210px;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%) rotate(24deg);
-  width: 390px;
-  z-index: 2;
-}
-
-.orbit-a {
-  animation: orbit-roll var(--shader-speed, 39s) linear infinite;
-}
-
-.orbit-b {
-  animation: orbit-roll calc(var(--shader-speed, 39s) * 0.78) linear infinite reverse;
-  height: 150px;
-  transform: translate(-50%, -50%) rotate(-18deg);
-  width: 320px;
-}
-
-.shader-controls {
-  align-content: center;
-  display: grid;
-  gap: 12px;
-}
-
-.shader-slider {
-  background: rgba(255, 255, 255, 0.64);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  display: grid;
-  gap: 8px;
-  grid-template-columns: 1fr auto;
-  padding: 12px;
-}
-
-.shader-slider input {
-  grid-column: 1 / -1;
-}
-
-.shader-slider span {
-  color: var(--muted);
-}
-
-.shader-slider strong {
-  color: var(--teal);
-}
-
-@keyframes shader-drift {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg) scale(1);
-  }
-
-  50% {
-    transform: translate(-48%, -52%) rotate(180deg) scale(1.08);
-  }
-
-  to {
-    transform: translate(-50%, -50%) rotate(360deg) scale(1);
-  }
-}
-
-@keyframes shader-slide {
-  from {
-    transform: translateX(-18px);
-  }
-
-  to {
-    transform: translateX(18px);
-  }
-}
-
-@keyframes orbit-roll {
-  from {
-    rotate: 0deg;
-  }
-
-  to {
-    rotate: 360deg;
-  }
-}
-
 .compact-heading {
   margin-bottom: 18px;
 }
@@ -1326,7 +1192,6 @@ textarea {
   .two-column,
   .grid-three,
   .algorithm-row,
-  .shader-panel,
   .instructor-panel {
     grid-template-columns: 1fr;
   }
