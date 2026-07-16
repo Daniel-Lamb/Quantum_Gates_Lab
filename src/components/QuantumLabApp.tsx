@@ -100,6 +100,18 @@ const paths = [
   "Full Course Path"
 ];
 
+const singleGateOrder: GateName[] = ["I", "X", "Y", "Z", "H", "S", "T"];
+
+const gatePlacardCaptions: Record<GateName, string> = {
+  I: "state unchanged",
+  X: "bit flip",
+  Y: "bit + phase flip",
+  Z: "phase flip",
+  H: "superposition",
+  S: "quarter phase",
+  T: "eighth phase"
+};
+
 const gateInfo: Record<
   GateName,
   {
@@ -463,6 +475,15 @@ export default function QuantumLabApp() {
   const [matrixInput, setMatrixInput] = useState<"0" | "1">("0");
   const [activeAlgorithm, setActiveAlgorithm] = useState(0);
   const [diagramGlow, setDiagramGlow] = useState(70);
+  const [flippedGates, setFlippedGates] = useState<Record<GateName, boolean>>({
+    I: false,
+    X: false,
+    Y: false,
+    Z: false,
+    H: false,
+    S: false,
+    T: false
+  });
 
   const states = useMemo(() => executeCircuit(activeCircuit), [activeCircuit]);
   const clampedStep = Math.min(step, activeCircuit.operations.length);
@@ -545,6 +566,11 @@ export default function QuantumLabApp() {
       operations: [...activeCircuit.operations, operation]
     };
     loadCircuit(nextCircuit);
+  }
+
+  function flipGatePlacard(gate: GateName) {
+    setSelectedGate(gate);
+    setFlippedGates((current) => ({ ...current, [gate]: !current[gate] }));
   }
 
   return (
@@ -962,7 +988,7 @@ export default function QuantumLabApp() {
           text="Each gate gets a symbol, matrix, effect, use case, common mistake, and challenge."
         >
           <div className="toolbar">
-            {(Object.keys(gateInfo) as GateName[]).map((gate) => (
+            {singleGateOrder.map((gate) => (
               <button
                 key={gate}
                 className={selectedGate === gate ? "pill active" : "pill"}
@@ -972,6 +998,11 @@ export default function QuantumLabApp() {
               </button>
             ))}
           </div>
+          <GatePlacardCarousel
+            activeGate={selectedGate}
+            flippedGates={flippedGates}
+            onFlip={flipGatePlacard}
+          />
           <GateReference gate={selectedGate} />
         </FeatureCard>
       </section>
@@ -1616,6 +1647,115 @@ function CorrelationGrid({
         </div>
       ))}
     </div>
+  );
+}
+
+function GatePlacardCarousel({
+  activeGate,
+  flippedGates,
+  onFlip
+}: {
+  activeGate: GateName;
+  flippedGates: Record<GateName, boolean>;
+  onFlip: (gate: GateName) => void;
+}) {
+  return (
+    <div className="gate-placard-row" aria-label="Scrollable quantum gate placards">
+      {singleGateOrder.map((gate) => {
+        const info = gateInfo[gate];
+        const isFlipped = flippedGates[gate];
+        const className = [
+          "gate-placard",
+          isFlipped ? "is-flipped" : "",
+          activeGate === gate ? "is-active" : ""
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        return (
+          <button
+            aria-label={`${isFlipped ? "Hide" : "Show"} ${gate} gate explanation`}
+            aria-pressed={isFlipped}
+            className={className}
+            key={gate}
+            onClick={() => onFlip(gate)}
+            type="button"
+          >
+            <span className="gate-placard-inner">
+              <span className="gate-placard-face gate-placard-front">
+                <span className="gate-visual-wrap">
+                  <GatePlacardImage gate={gate} />
+                </span>
+                <span className="gate-placard-name">
+                  <strong>{gate}</strong>
+                  <span>{info.title}</span>
+                </span>
+              </span>
+              <span className="gate-placard-face gate-placard-back">
+                <strong>{gate}: what it does</strong>
+                <span>{info.description}</span>
+                <span className="placard-how">{info.how}</span>
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function GatePlacardImage({ gate }: { gate: GateName }) {
+  const phaseOffset: Record<GateName, number> = {
+    I: 0,
+    X: 20,
+    Y: 40,
+    Z: 60,
+    H: 80,
+    S: 100,
+    T: 120
+  };
+  const offset = phaseOffset[gate];
+
+  return (
+    <svg className="gate-placard-image" viewBox="0 0 180 136" role="img" aria-label={`${gate} gate visual`}>
+      <defs>
+        <linearGradient id={`gate-gradient-${gate}`} x1="0%" x2="100%" y1="0%" y2="100%">
+          <stop offset="0%" stopColor="var(--mint)" />
+          <stop offset="52%" stopColor="var(--teal)" />
+          <stop offset="100%" stopColor="var(--blue)" />
+        </linearGradient>
+        <radialGradient id={`gate-glow-${gate}`} cx="50%" cy="42%" r="58%">
+          <stop offset="0%" stopColor="rgba(255, 255, 255, 0.94)" />
+          <stop offset="48%" stopColor="rgba(159, 244, 207, 0.5)" />
+          <stop offset="100%" stopColor="rgba(39, 111, 159, 0)" />
+        </radialGradient>
+      </defs>
+      <rect className="gate-image-bg" x="10" y="10" width="160" height="116" rx="22" />
+      <circle cx="90" cy="64" r="48" fill={`url(#gate-glow-${gate})`} />
+      <path
+        className="gate-wave"
+        d={`M 18 ${74 - offset / 10} C 48 ${34 + offset / 12}, 70 ${96 - offset / 18}, 96 ${62 + offset / 24} S 138 ${40 + offset / 14}, 162 ${72 - offset / 16}`}
+      />
+      <path
+        className="gate-wave secondary"
+        d={`M 20 ${46 + offset / 12} C 52 ${78 - offset / 18}, 74 ${28 + offset / 11}, 98 ${56 + offset / 20} S 136 ${98 - offset / 10}, 160 ${48 + offset / 18}`}
+      />
+      <g className="gate-chip">
+        <rect x="58" y="34" width="64" height="60" rx="14" fill={`url(#gate-gradient-${gate})`} />
+        <text x="90" y="74" textAnchor="middle">
+          {gate}
+        </text>
+      </g>
+      <g className="gate-qubits">
+        <line x1="28" y1="52" x2="58" y2="52" />
+        <line x1="122" y1="52" x2="152" y2="52" />
+        <line x1="28" y1="76" x2="58" y2="76" />
+        <line x1="122" y1="76" x2="152" y2="76" />
+      </g>
+      <text className="gate-image-caption" x="90" y="114" textAnchor="middle">
+        {gatePlacardCaptions[gate]}
+      </text>
+    </svg>
   );
 }
 

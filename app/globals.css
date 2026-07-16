@@ -653,6 +653,198 @@ textarea {
   gap: 12px;
 }
 
+.gate-placard-row {
+  display: grid;
+  gap: 14px;
+  grid-auto-columns: clamp(210px, 32vw, 248px);
+  grid-auto-flow: column;
+  margin: 2px -2px 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 2px 2px 12px;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: rgba(12, 128, 116, 0.42) rgba(255, 255, 255, 0.38);
+}
+
+.gate-placard-row::-webkit-scrollbar {
+  height: 10px;
+}
+
+.gate-placard-row::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.36);
+  border-radius: 999px;
+}
+
+.gate-placard-row::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--teal), var(--blue));
+  border-radius: 999px;
+}
+
+.gate-placard {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: inherit;
+  display: block;
+  height: 284px;
+  min-height: 0;
+  padding: 0;
+  perspective: 1200px;
+  scroll-snap-align: start;
+  text-align: left;
+}
+
+.gate-placard:hover,
+.gate-placard:focus-visible {
+  box-shadow: none;
+  transform: none;
+}
+
+.gate-placard:focus-visible {
+  outline: 3px solid rgba(12, 128, 116, 0.34);
+  outline-offset: 4px;
+}
+
+.gate-placard-inner {
+  display: block;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 520ms cubic-bezier(0.2, 0.72, 0.2, 1);
+  width: 100%;
+}
+
+.gate-placard.is-flipped .gate-placard-inner {
+  transform: rotateY(180deg);
+}
+
+.gate-placard-face {
+  backface-visibility: hidden;
+  backdrop-filter: blur(22px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(239, 255, 249, 0.6)),
+    radial-gradient(circle at 18% 12%, rgba(159, 244, 207, 0.32), transparent 36%);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  box-shadow: 0 18px 44px rgba(13, 28, 27, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  display: grid;
+  gap: 12px;
+  height: 100%;
+  inset: 0;
+  overflow: hidden;
+  padding: 14px;
+  position: absolute;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+  width: 100%;
+}
+
+.gate-placard.is-active .gate-placard-face {
+  border-color: rgba(12, 128, 116, 0.46);
+  box-shadow: 0 22px 52px rgba(13, 28, 27, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.gate-placard-front {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.gate-placard-back {
+  background:
+    linear-gradient(145deg, rgba(16, 19, 20, 0.95), rgba(20, 82, 84, 0.9)),
+    radial-gradient(circle at 78% 18%, rgba(159, 244, 207, 0.24), transparent 36%);
+  color: white;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  transform: rotateY(180deg);
+}
+
+.gate-visual-wrap {
+  align-items: center;
+  display: flex;
+  min-height: 0;
+}
+
+.gate-placard-image {
+  aspect-ratio: 180 / 136;
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.gate-image-bg {
+  fill: rgba(255, 255, 255, 0.34);
+  stroke: rgba(255, 255, 255, 0.7);
+}
+
+.gate-wave {
+  fill: none;
+  opacity: 0.9;
+  stroke: rgba(12, 128, 116, 0.68);
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.gate-wave.secondary {
+  opacity: 0.66;
+  stroke: rgba(39, 111, 159, 0.72);
+  stroke-width: 2.2;
+}
+
+.gate-chip rect {
+  filter: drop-shadow(0 12px 18px rgba(13, 28, 27, 0.18));
+}
+
+.gate-chip text {
+  fill: white;
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.gate-qubits line {
+  stroke: rgba(16, 19, 20, 0.34);
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.gate-image-caption {
+  fill: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.gate-placard-name {
+  display: grid;
+  gap: 4px;
+}
+
+.gate-placard-name strong {
+  font-size: 2.6rem;
+  line-height: 0.9;
+}
+
+.gate-placard-name span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.gate-placard-back strong {
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.gate-placard-back span {
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.42;
+}
+
+.gate-placard-back .placard-how {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.9rem;
+  padding: 10px;
+}
+
 .matrix-card,
 .vector-card {
   background: rgba(255, 255, 255, 0.72);
